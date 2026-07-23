@@ -1,0 +1,1 @@
+- [Expo first-build persistence](expo-first-build-persistence.md) — keep initial mobile builds frontend-first with local persistence unless server features are explicitly requested.
