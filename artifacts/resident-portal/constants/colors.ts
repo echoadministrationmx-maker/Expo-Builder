@@ -1,58 +1,58 @@
 /**
- * Semantic design tokens for the mobile app.
+ * Semantic design tokens for the Echo resident portal.
  *
- * These tokens mirror the naming conventions used in web artifacts (index.css)
- * so that multi-artifact projects share a cohesive visual identity.
+ * Brand palette:
+ *   Echo Blue   #1847CC  — primary action color
+ *   Echo Ink    #0C1320  — primary text / dark surfaces
+ *   Echo Accent #7BA8FF  — secondary accents, active icons
+ *   Echo Silver #F2F4F8  — light backgrounds
+ *   Echo Mid    #E0E6F5  — borders, dividers, subtle fills
  *
- * Replace the placeholder values below with values that match the project's
- * brand. If a sibling web artifact exists, read its index.css and convert the
- * HSL values to hex so both artifacts use the same palette.
- *
- * To add dark mode, add a `dark` key with the same token names.
- * The useColors() hook will automatically pick it up.
+ * Semantic colors (success / warning) are intentionally left unchanged
+ * so that status indicators (paid = green, pending = orange) keep their
+ * universal meaning independent of brand palette.
  */
 
 const colors = {
   light: {
     // Legacy aliases (kept for backward compatibility)
-    text: '#132238',
-    tint: '#e56b52',
+    text: '#0C1320',
+    tint: '#1847CC',
 
     // Core surfaces
-    background: '#f7f4ef',
-    foreground: '#132238',
+    background: '#F2F4F8',       // Echo Silver
+    foreground: '#0C1320',       // Echo Ink  (also the dark balance card bg)
 
     // Cards / elevated surfaces
-    card: '#fffdf9',
-    cardForeground: '#132238',
+    card: '#FFFFFF',             // white cards on Echo Silver background
+    cardForeground: '#0C1320',   // Echo Ink
 
-    // Primary action color (buttons, links, active states)
-    primary: '#e56b52',
-    primaryForeground: '#ffffff',
+    // Primary action color (buttons, links, tab active, active states)
+    primary: '#1847CC',          // Echo Blue
+    primaryForeground: '#FFFFFF', // white text on Echo Blue
 
     // Secondary / less-emphasis interactive surfaces
-    secondary: '#e9eef1',
-    secondaryForeground: '#294154',
+    secondary: '#E0E6F5',        // Echo Mid — icon chip backgrounds, row fills
+    secondaryForeground: '#0C1320',
 
     // Muted / subdued elements (dividers, timestamps, placeholders)
-    muted: '#e9e5de',
-    mutedForeground: '#6e7c86',
+    muted: '#E0E6F5',            // Echo Mid
+    mutedForeground: '#5A6A85',  // blue-toned neutral, readable on Silver & white
 
-    // Accent highlights (badges, selected items, focus rings)
-    accent: '#f4d8c9',
-    accentForeground: '#8f4338',
+    // Accent highlights (badges, selected items, maintenance icon bg)
+    accent: '#D4E0FF',           // soft Echo Blue tint
+    accentForeground: '#1847CC', // Echo Blue icon/text on the tint
 
-    // Destructive actions (delete, error states)
-    destructive: '#c84d4d',
-    destructiveForeground: '#ffffff',
+    // Destructive actions — kept unchanged (semantic meaning)
+    destructive: '#C84D4D',
+    destructiveForeground: '#FFFFFF',
 
     // Borders and input outlines
-    border: '#dedbd3',
-    input: '#d2d8d9',
+    border: '#E0E6F5',           // Echo Mid
+    input: '#C8D3E8',            // slightly deeper for input outlines
   },
 
-  // Border radius (in px). Sync from the sibling web artifact's --radius
-  // CSS variable. This value applies to cards, buttons, inputs, and modals.
+  // Border radius (px). Applies to cards, buttons, inputs, modals.
   radius: 18,
 };
 
