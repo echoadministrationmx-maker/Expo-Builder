@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export type MaintenanceRequest = {
   id: string;
@@ -25,12 +26,11 @@ type ResidentContextValue = {
   residentName: string;
   requests: MaintenanceRequest[];
   announcements: Announcement[];
-  signIn: (email: string, accessCode: string) => Promise<void>;
+  signIn: (clave: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   addRequest: (title: string, detail: string) => Promise<void>;
 };
 
-const SESSION_KEY = '@resident-portal/session';
 const REQUESTS_KEY = '@resident-portal/requests';
 
 const seedRequests: MaintenanceRequest[] = [
@@ -78,41 +78,73 @@ const ResidentContext = createContext<ResidentContextValue | null>(null);
 export function ResidentProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSignedIn, setIsSignedIn] = useState(false);
-  const [residentName, setResidentName] = useState('Alex Morgan');
+  const [residentName, setResidentName] = useState('Residente');
   const [requests, setRequests] = useState<MaintenanceRequest[]>(seedRequests);
 
   useEffect(() => {
-    const restore = async () => {
-      const [session, savedRequests] = await Promise.all([
-        AsyncStorage.getItem(SESSION_KEY),
-        AsyncStorage.getItem(REQUESTS_KEY),
-      ]);
-      if (session) {
-        setIsSignedIn(true);
-        setResidentName(session);
-      }
+    // Restore saved maintenance requests
+    const restoreRequests = async () => {
+      const savedRequests = await AsyncStorage.getItem(REQUESTS_KEY);
       if (savedRequests) {
         setRequests(JSON.parse(savedRequests) as MaintenanceRequest[]);
       }
+    };
+    void restoreRequests();
+
+    // Check existing Supabase session
+    const restoreSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setIsSignedIn(true);
+        setResidentName(session.user.user_metadata?.display_name as string ?? 'Residente');
+      }
       setIsLoading(false);
     };
-    void restore();
+    void restoreSession();
+
+    // Listen for future auth state changes (token refresh, sign-out, etc.)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsSignedIn(!!session);
+      if (session) {
+        setResidentName(session.user.user_metadata?.display_name as string ?? 'Residente');
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string) => {
-    const name = email
-      .split('@')[0]
-      .replace(/[._-]/g, ' ')
-      .replace(/\b\w/g, (letter) => letter.toUpperCase())
-      .trim() || 'Alex Morgan';
-    await AsyncStorage.setItem(SESSION_KEY, name);
-    setResidentName(name);
+  const signIn = async (clave: string, password: string) => {
+    const claveNormalizada = clave.trim();
+    if (!claveNormalizada || !password) {
+      throw new Error('Ingresa tu clave y tu contraseña.');
+    }
+
+    const { data: correoResuelto, error: errorResolver } = await supabase.rpc('resolver_identidad', {
+      p_clave: claveNormalizada,
+    });
+
+    if (errorResolver || !correoResuelto) {
+      throw new Error('Clave no encontrada. Verifica con tu administrador.');
+    }
+
+    const { data: authData, error: errorAuth } = await supabase.auth.signInWithPassword({
+      email: correoResuelto as string,
+      password: password,
+    });
+
+    if (errorAuth || !authData.session) {
+      throw new Error('Contraseña incorrecta.');
+    }
+
+    // Session is persisted automatically by Supabase (persistSession: true)
     setIsSignedIn(true);
+    setResidentName(authData.session.user.user_metadata?.display_name as string ?? 'Residente');
   };
 
   const signOut = async () => {
-    await AsyncStorage.removeItem(SESSION_KEY);
+    await supabase.auth.signOut();
     setIsSignedIn(false);
+    setResidentName('Residente');
   };
 
   const addRequest = async (title: string, detail: string) => {

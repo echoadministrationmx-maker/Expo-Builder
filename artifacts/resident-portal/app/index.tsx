@@ -19,8 +19,9 @@ export default function WelcomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { isLoading, isSignedIn, signIn } = useResident();
-  const [email, setEmail] = useState('');
-  const [accessCode, setAccessCode] = useState('');
+  const [clave, setClave] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -31,15 +32,16 @@ export default function WelcomeScreen() {
   }, [isLoading, isSignedIn]);
 
   const handleSignIn = async () => {
-    if (!email.includes('@') || accessCode.trim().length < 4) {
-      setError('Enter your email and a 4-character access code.');
-      return;
-    }
     setError('');
     setIsSubmitting(true);
-    await signIn(email, accessCode);
-    setIsSubmitting(false);
-    router.replace('/(tabs)');
+    try {
+      await signIn(clave, password);
+      router.replace('/(tabs)');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error al ingresar. Intenta de nuevo.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isLoading || isSignedIn) {
@@ -72,37 +74,62 @@ export default function WelcomeScreen() {
 
       <View style={styles.form}>
         <Text style={[styles.formLabel, { color: colors.foreground }]}>Resident sign in</Text>
+
+        {/* Clave de acceso */}
         <View style={[styles.inputWrap, { backgroundColor: colors.card, borderColor: colors.input }]}>
-          <Feather name="mail" size={18} color={colors.mutedForeground} />
+          <Feather name="hash" size={18} color={colors.mutedForeground} />
           <TextInput
-            value={email}
-            onChangeText={setEmail}
+            value={clave}
+            onChangeText={setClave}
             autoCapitalize="none"
-            keyboardType="email-address"
-            placeholder="Email address"
+            autoCorrect={false}
+            placeholder="Ej: 101A"
             placeholderTextColor={colors.mutedForeground}
             style={[styles.input, { color: colors.foreground }]}
-            accessibilityLabel="Email address"
+            accessibilityLabel="Clave de acceso"
+            returnKeyType="next"
           />
         </View>
+
+        {/* Contraseña */}
         <View style={[styles.inputWrap, { backgroundColor: colors.card, borderColor: colors.input }]}>
-          <Feather name="key" size={18} color={colors.mutedForeground} />
+          <Feather name="lock" size={18} color={colors.mutedForeground} />
           <TextInput
-            value={accessCode}
-            onChangeText={setAccessCode}
-            secureTextEntry
-            placeholder="Access code"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            placeholder="Contraseña"
             placeholderTextColor={colors.mutedForeground}
             style={[styles.input, { color: colors.foreground }]}
-            accessibilityLabel="Access code"
+            accessibilityLabel="Contraseña"
+            returnKeyType="done"
+            onSubmitEditing={handleSignIn}
           />
+          <Pressable
+            onPress={() => setShowPassword((v) => !v)}
+            accessibilityLabel={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            hitSlop={8}
+          >
+            <Feather
+              name={showPassword ? 'eye-off' : 'eye'}
+              size={18}
+              color={colors.mutedForeground}
+            />
+          </Pressable>
         </View>
-        {error ? <Text style={[styles.error, { color: colors.destructive }]}>{error}</Text> : null}
+
+        {error ? (
+          <View style={[styles.errorBox, { backgroundColor: colors.destructive + '18', borderColor: colors.destructive + '40' }]}>
+            <Feather name="alert-circle" size={14} color={colors.destructive} />
+            <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>
+          </View>
+        ) : null}
+
         <Pressable
           onPress={handleSignIn}
           disabled={isSubmitting}
           accessibilityRole="button"
-          accessibilityLabel="Continue to resident portal"
+          accessibilityLabel="Ingresar al portal"
           style={({ pressed }) => [
             styles.primaryButton,
             { backgroundColor: colors.primary, opacity: pressed || isSubmitting ? 0.8 : 1 },
@@ -112,19 +139,20 @@ export default function WelcomeScreen() {
             <ActivityIndicator color={colors.primaryForeground} />
           ) : (
             <>
-              <Text style={[styles.primaryButtonText, { color: colors.primaryForeground }]}>Continue</Text>
+              <Text style={[styles.primaryButtonText, { color: colors.primaryForeground }]}>Ingresar</Text>
               <Feather name="arrow-right" size={18} color={colors.primaryForeground} />
             </>
           )}
         </Pressable>
+
         <Text style={[styles.helper, { color: colors.mutedForeground }]}>
-          Your building manager provided your access code.
+          Tu administrador te proporcionó tu clave de acceso.
         </Text>
       </View>
 
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         <Feather name="shield" size={15} color={colors.mutedForeground} />
-        <Text style={[styles.footerText, { color: colors.mutedForeground }]}>Private resident access</Text>
+        <Text style={[styles.footerText, { color: colors.mutedForeground }]}>Acceso privado para residentes</Text>
       </View>
     </KeyboardAvoidingView>
   );
@@ -144,7 +172,8 @@ const styles = StyleSheet.create({
   formLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 18, marginBottom: 3 },
   inputWrap: { height: 56, borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
   input: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 15, height: '100%' },
-  error: { fontFamily: 'Inter_500Medium', fontSize: 13, marginTop: -2 },
+  errorBox: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
+  errorText: { fontFamily: 'Inter_500Medium', fontSize: 13, flex: 1, lineHeight: 18 },
   primaryButton: { height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 10, marginTop: 4 },
   primaryButtonText: { fontFamily: 'Inter_600SemiBold', fontSize: 16 },
   helper: { textAlign: 'center', fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 },
