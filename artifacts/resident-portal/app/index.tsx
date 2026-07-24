@@ -61,19 +61,19 @@ export default function WelcomeScreen() {
         <View style={[styles.brandMark, { backgroundColor: colors.primary }]}>
           <Feather name="home" size={20} color={colors.primaryForeground} />
         </View>
-        <Text style={[styles.brandName, { color: colors.foreground }]}>Haven</Text>
+        <Text style={[styles.brandName, { color: colors.foreground }]}>Echo</Text>
       </View>
 
       <View style={styles.hero}>
-        <Text style={[styles.eyebrow, { color: colors.primary }]}>YOUR HOME, CONNECTED</Text>
-        <Text style={[styles.title, { color: colors.foreground }]}>Welcome home.</Text>
+        <Text style={[styles.eyebrow, { color: colors.primary }]}>TU HOGAR, CONECTADO</Text>
+        <Text style={[styles.title, { color: colors.foreground }]}>Bienvenido a casa.</Text>
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-          Everything you need to feel at home, right at your fingertips.
+          Todo lo que necesitas para sentirte en casa, en la palma de tu mano.
         </Text>
       </View>
 
       <View style={styles.form}>
-        <Text style={[styles.formLabel, { color: colors.foreground }]}>Resident sign in</Text>
+        <Text style={[styles.formLabel, { color: colors.foreground }]}>Iniciar sesión</Text>
 
         {/* Clave de acceso */}
         <View style={[styles.inputWrap, { backgroundColor: colors.card, borderColor: colors.input }]}>

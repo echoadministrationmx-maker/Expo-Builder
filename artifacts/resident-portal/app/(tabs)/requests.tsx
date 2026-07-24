@@ -19,30 +19,52 @@ export default function RequestsScreen() {
       contentContainerStyle={[styles.content, { paddingTop: insets.top + 18, paddingBottom: insets.bottom + 106 }]}
       ListHeaderComponent={
         <View>
-          <Text style={[styles.eyebrow, { color: colors.primary }]}>HOME CARE</Text>
-          <Text style={[styles.title, { color: colors.foreground }]}>Maintenance</Text>
-          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>Keep your home running smoothly.</Text>
+          <Text style={[styles.eyebrow, { color: colors.primary }]}>MANTENIMIENTO</Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>Solicitudes</Text>
+          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
+            Mantén tu hogar en perfectas condiciones.
+          </Text>
           <Pressable
             onPress={() => router.push('/request/new')}
             accessibilityRole="button"
-            accessibilityLabel="Create a maintenance request"
-            style={({ pressed }) => [styles.newButton, { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 }]}
+            accessibilityLabel="Crear solicitud de mantenimiento"
+            style={({ pressed }) => [
+              styles.newButton,
+              { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 },
+            ]}
           >
             <Feather name="plus" size={18} color={colors.primaryForeground} />
-            <Text style={[styles.newButtonText, { color: colors.primaryForeground }]}>New request</Text>
+            <Text style={[styles.newButtonText, { color: colors.primaryForeground }]}>Nueva solicitud</Text>
           </Pressable>
-          <Text style={[styles.listTitle, { color: colors.foreground }]}>Your requests</Text>
+          <Text style={[styles.listTitle, { color: colors.foreground }]}>Tus solicitudes</Text>
         </View>
       }
       renderItem={({ item }) => (
         <View style={[styles.requestCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.requestTop}><View style={[styles.requestIcon, { backgroundColor: colors.accent }]}><Feather name="tool" size={17} color={colors.accentForeground} /></View><StatusPill status={item.status} /></View>
+          <View style={styles.requestTop}>
+            <View style={[styles.requestIcon, { backgroundColor: colors.accent }]}>
+              <Feather name="tool" size={17} color={colors.accentForeground} />
+            </View>
+            <StatusPill status={item.status} />
+          </View>
           <Text style={[styles.requestTitle, { color: colors.foreground }]}>{item.title}</Text>
-          <Text style={[styles.requestDetail, { color: colors.mutedForeground }]} numberOfLines={2}>{item.detail}</Text>
-          <Text style={[styles.requestDate, { color: colors.mutedForeground }]}>Submitted {item.createdAt}</Text>
+          <Text style={[styles.requestDetail, { color: colors.mutedForeground }]} numberOfLines={2}>
+            {item.detail}
+          </Text>
+          <Text style={[styles.requestDate, { color: colors.mutedForeground }]}>
+            Enviado {item.createdAt}
+          </Text>
         </View>
       )}
-      ListEmptyComponent={<View style={styles.empty}><Feather name="check-circle" size={28} color={colors.primary} /><Text style={[styles.emptyTitle, { color: colors.foreground }]}>Nothing needs attention</Text><Text style={[styles.emptyText, { color: colors.mutedForeground }]}>When something comes up, you can send a request here.</Text></View>}
+      ListEmptyComponent={
+        <View style={styles.empty}>
+          <Feather name="check-circle" size={28} color={colors.primary} />
+          <Text style={[styles.emptyTitle, { color: colors.foreground }]}>Todo en orden</Text>
+          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+            Cuando algo ocurra, puedes enviar una solicitud aquí.
+          </Text>
+        </View>
+      }
       showsVerticalScrollIndicator={false}
     />
   );

@@ -6,10 +6,10 @@ import { useColors } from '@/hooks/useColors';
 import { SectionTitle } from '@/components/PortalUi';
 
 const payments = [
-  { date: 'Jun 01, 2026', label: 'Monthly dues', amount: '$485.00', status: 'Paid' },
-  { date: 'May 01, 2026', label: 'Monthly dues', amount: '$485.00', status: 'Paid' },
-  { date: 'Apr 01, 2026', label: 'Monthly dues', amount: '$485.00', status: 'Paid' },
-  { date: 'Mar 01, 2026', label: 'Monthly dues', amount: '$485.00', status: 'Paid' },
+  { date: '01 jun 2026', label: 'Cuota mensual', amount: '$485.00', status: 'Pagado' },
+  { date: '01 may 2026', label: 'Cuota mensual', amount: '$485.00', status: 'Pagado' },
+  { date: '01 abr 2026', label: 'Cuota mensual', amount: '$485.00', status: 'Pagado' },
+  { date: '01 mar 2026', label: 'Cuota mensual', amount: '$485.00', status: 'Pagado' },
 ];
 
 export default function PaymentsScreen() {
@@ -21,26 +21,40 @@ export default function PaymentsScreen() {
       contentContainerStyle={[styles.content, { paddingTop: insets.top + 18, paddingBottom: insets.bottom + 104 }]}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={[styles.eyebrow, { color: colors.primary }]}>FINANCIAL OVERVIEW</Text>
-      <Text style={[styles.title, { color: colors.foreground }]}>Payments</Text>
-      <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>Unit 4B · 88 Willow Street</Text>
+      <Text style={[styles.eyebrow, { color: colors.primary }]}>RESUMEN FINANCIERO</Text>
+      <Text style={[styles.title, { color: colors.foreground }]}>Pagos</Text>
+      <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>Depto 4B · Edificio A</Text>
 
       <View style={[styles.balanceCard, { backgroundColor: colors.foreground }]}>
         <View style={styles.balanceHeader}>
-          <Text style={styles.balanceLabel}>CURRENT BALANCE</Text>
-          <View style={styles.paidBadge}><Feather name="check" size={12} color="#dceee4" /><Text style={styles.paidBadgeText}>Up to date</Text></View>
+          <Text style={styles.balanceLabel}>SALDO ACTUAL</Text>
+          <View style={styles.paidBadge}>
+            <Feather name="check" size={12} color="#dceee4" />
+            <Text style={styles.paidBadgeText}>Al corriente</Text>
+          </View>
         </View>
         <Text style={styles.balance}>$0.00</Text>
-        <Text style={styles.balanceNote}>Your next payment of $485.00 is due Jul 01, 2026.</Text>
+        <Text style={styles.balanceNote}>Tu próximo pago de $485.00 vence el 1 jul 2026.</Text>
       </View>
 
-      <SectionTitle title="Payment history" />
+      <SectionTitle title="Historial de pagos" />
       <View style={[styles.historyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         {payments.map((payment, index) => (
-          <View key={payment.date} style={[styles.paymentRow, index < payments.length - 1 && { borderBottomColor: colors.border, borderBottomWidth: 1 }]}>
-            <View style={[styles.paymentIcon, { backgroundColor: colors.secondary }]}><Feather name="arrow-up-right" size={16} color={colors.foreground} /></View>
-            <View style={styles.paymentInfo}><Text style={[styles.paymentLabel, { color: colors.foreground }]}>{payment.label}</Text><Text style={[styles.paymentDate, { color: colors.mutedForeground }]}>{payment.date}</Text></View>
-            <View style={styles.paymentAmount}><Text style={[styles.amount, { color: colors.foreground }]}>{payment.amount}</Text><Text style={[styles.paid, { color: '#3e9471' }]}>{payment.status}</Text></View>
+          <View
+            key={payment.date}
+            style={[styles.paymentRow, index < payments.length - 1 && { borderBottomColor: colors.border, borderBottomWidth: 1 }]}
+          >
+            <View style={[styles.paymentIcon, { backgroundColor: colors.secondary }]}>
+              <Feather name="arrow-up-right" size={16} color={colors.foreground} />
+            </View>
+            <View style={styles.paymentInfo}>
+              <Text style={[styles.paymentLabel, { color: colors.foreground }]}>{payment.label}</Text>
+              <Text style={[styles.paymentDate, { color: colors.mutedForeground }]}>{payment.date}</Text>
+            </View>
+            <View style={styles.paymentAmount}>
+              <Text style={[styles.amount, { color: colors.foreground }]}>{payment.amount}</Text>
+              <Text style={[styles.paid, { color: '#3e9471' }]}>{payment.status}</Text>
+            </View>
           </View>
         ))}
       </View>

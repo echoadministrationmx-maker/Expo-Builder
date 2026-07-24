@@ -15,7 +15,7 @@ export default function AnnouncementDetailScreen() {
   const announcement = announcements.find((item) => item.id === id);
 
   if (!announcement) {
-    return <View style={[styles.missing, { backgroundColor: colors.background }]}><Text style={[styles.missingText, { color: colors.foreground }]}>Announcement unavailable.</Text></View>;
+    return <View style={[styles.missing, { backgroundColor: colors.background }]}><Text style={[styles.missingText, { color: colors.foreground }]}>Comunicado no disponible.</Text></View>;
   }
 
   return (
@@ -28,7 +28,7 @@ export default function AnnouncementDetailScreen() {
         <View style={styles.meta}><Text style={[styles.date, { color: colors.mutedForeground }]}>{announcement.date}</Text><View style={[styles.dot, { backgroundColor: colors.border }]} /><Text style={[styles.date, { color: colors.mutedForeground }]}>{announcement.readTime}</Text></View>
         <View style={[styles.feature, { backgroundColor: colors.secondary }]}><Feather name="home" size={34} color={colors.foreground} /><View style={[styles.featureLine, { backgroundColor: colors.primary }]} /></View>
         <Text style={[styles.body, { color: colors.foreground }]}>{announcement.body}</Text>
-        <View style={[styles.note, { backgroundColor: colors.card, borderColor: colors.border }]}><Feather name="info" size={17} color={colors.primary} /><Text style={[styles.noteText, { color: colors.mutedForeground }]}>If you have questions, reach out to the concierge team from the building office.</Text></View>
+        <View style={[styles.note, { backgroundColor: colors.card, borderColor: colors.border }]}><Feather name="info" size={17} color={colors.primary} /><Text style={[styles.noteText, { color: colors.mutedForeground }]}>Si tienes preguntas, comunícate con el equipo de administración del edificio.</Text></View>
       </ScrollView>
     </>
   );

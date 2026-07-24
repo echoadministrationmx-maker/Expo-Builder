@@ -17,7 +17,7 @@ export default function NewRequestScreen() {
 
   const submit = async () => {
     if (title.trim().length < 3 || detail.trim().length < 8) {
-      setError('Add a short title and a few details so we can help.');
+      setError('Agrega un asunto y algunos detalles para que podamos ayudarte.');
       return;
     }
     await addRequest(title.trim(), detail.trim());
@@ -25,21 +25,54 @@ export default function NewRequestScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 18 }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.header}><IconButton icon="arrow-left" label="Go back" onPress={() => router.back()} /><Text style={[styles.headerTitle, { color: colors.foreground }]}>New request</Text><View style={styles.headerSpacer} /></View>
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 18 }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View style={styles.header}>
+        <IconButton icon="arrow-left" label="Regresar" onPress={() => router.back()} />
+        <Text style={[styles.headerTitle, { color: colors.foreground }]}>Nueva solicitud</Text>
+        <View style={styles.headerSpacer} />
+      </View>
+
       <View style={styles.body}>
-        <View style={[styles.introIcon, { backgroundColor: colors.accent }]}><Feather name="tool" size={22} color={colors.accentForeground} /></View>
-        <Text style={[styles.title, { color: colors.foreground }]}>What can we help with?</Text>
-        <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>Tell the building team a little about what’s happening in your home.</Text>
-        <Text style={[styles.label, { color: colors.foreground }]}>Subject</Text>
-        <TextInput value={title} onChangeText={setTitle} placeholder="e.g. Bedroom light is flickering" placeholderTextColor={colors.mutedForeground} style={[styles.input, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.input }]} />
-        <Text style={[styles.label, { color: colors.foreground }]}>Details</Text>
-        <TextInput value={detail} onChangeText={setDetail} multiline textAlignVertical="top" placeholder="Add any details that might help..." placeholderTextColor={colors.mutedForeground} style={[styles.textarea, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.input }]} />
+        <View style={[styles.introIcon, { backgroundColor: colors.accent }]}>
+          <Feather name="tool" size={22} color={colors.accentForeground} />
+        </View>
+        <Text style={[styles.title, { color: colors.foreground }]}>¿En qué podemos ayudarte?</Text>
+        <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
+          Cuéntale al equipo del edificio qué está pasando en tu departamento.
+        </Text>
+        <Text style={[styles.label, { color: colors.foreground }]}>Asunto</Text>
+        <TextInput
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Ej: La luz del cuarto parpadea"
+          placeholderTextColor={colors.mutedForeground}
+          style={[styles.input, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.input }]}
+        />
+        <Text style={[styles.label, { color: colors.foreground }]}>Detalles</Text>
+        <TextInput
+          value={detail}
+          onChangeText={setDetail}
+          multiline
+          textAlignVertical="top"
+          placeholder="Agrega detalles que nos puedan ayudar..."
+          placeholderTextColor={colors.mutedForeground}
+          style={[styles.textarea, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.input }]}
+        />
         {error ? <Text style={[styles.error, { color: colors.destructive }]}>{error}</Text> : null}
       </View>
+
       <View style={[styles.bottom, { paddingBottom: Math.max(insets.bottom, 18) }]}>
-        <Pressable onPress={submit} accessibilityRole="button" accessibilityLabel="Submit maintenance request" style={({ pressed }) => [styles.submit, { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 }]}>
-          <Text style={[styles.submitText, { color: colors.primaryForeground }]}>Submit request</Text><Feather name="arrow-up-right" size={17} color={colors.primaryForeground} />
+        <Pressable
+          onPress={submit}
+          accessibilityRole="button"
+          accessibilityLabel="Enviar solicitud de mantenimiento"
+          style={({ pressed }) => [styles.submit, { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 }]}
+        >
+          <Text style={[styles.submitText, { color: colors.primaryForeground }]}>Enviar solicitud</Text>
+          <Feather name="arrow-up-right" size={17} color={colors.primaryForeground} />
         </Pressable>
       </View>
     </KeyboardAvoidingView>

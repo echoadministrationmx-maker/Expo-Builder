@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "Resident Portal",
+    "name": "Echo",
     "slug": "resident-portal",
     "version": "1.0.0",
+    "description": "Portal de residentes de Echo Administración",
     "orientation": "portrait",
     "icon": "./assets/images/resident-icon.png",
     "scheme": "resident-portal",

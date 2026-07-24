@@ -17,15 +17,15 @@ function NativeTabLayout() {
     <NativeTabs>
       <NativeTabs.Trigger name="index">
         <Icon sf={{ default: 'house', selected: 'house.fill' }} />
-        <Label>Home</Label>
+        <Label>Inicio</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="requests">
         <Icon sf={{ default: 'wrench.and.screwdriver', selected: 'wrench.and.screwdriver.fill' }} />
-        <Label>Care</Label>
+        <Label>Solicitudes</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="payments">
         <Icon sf={{ default: 'creditcard', selected: 'creditcard.fill' }} />
-        <Label>Payments</Label>
+        <Label>Pagos</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -72,7 +72,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Inicio',
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="house" tintColor={color} size={24} />
@@ -84,7 +84,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="requests"
         options={{
-          title: 'Care',
+          title: 'Solicitudes',
           tabBarIcon: ({ color }) =>
             isIOS ? <SymbolView name="wrench.and.screwdriver" tintColor={color} size={23} /> : <Feather name="tool" size={21} color={color} />,
         }}
@@ -92,7 +92,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="payments"
         options={{
-          title: 'Payments',
+          title: 'Pagos',
           tabBarIcon: ({ color }) =>
             isIOS ? <SymbolView name="creditcard" tintColor={color} size={23} /> : <Feather name="credit-card" size={21} color={color} />,
         }}
