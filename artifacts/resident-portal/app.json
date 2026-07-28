@@ -12,12 +12,24 @@
     "splash": {
       "image": "./assets/images/resident-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0C1320"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.echoadmin.residentportal",
+      "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
-    "android": {},
+    "android": {
+      "package": "com.echoadmin.residentportal",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/resident-icon.png",
+        "backgroundColor": "#0C1320"
+      }
+    },
     "web": {
       "favicon": "./assets/images/resident-icon.png"
     },
@@ -25,7 +37,7 @@
       [
         "expo-router",
         {
-          "origin": "https://replit.com/"
+          "origin": "https://www.echoadministration.com/"
         }
       ],
       "expo-font",

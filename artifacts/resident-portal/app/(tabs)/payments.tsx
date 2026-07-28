@@ -1,14 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import { useColors } from '@/hooks/useColors';
@@ -20,7 +12,7 @@ type Pago = {
   id: string;
   monto: number;
   estado: 'pendiente' | 'pagado';
-  fecha_vencimiento: string;   // ISO date string
+  fecha_vencimiento: string; // ISO date string
   concepto: string | null;
 };
 
@@ -70,8 +62,9 @@ export default function PaymentsScreen() {
 
     const { data, error: err } = await supabase
       .from('pagos')
-      .select('*')
-      .order('fecha_vencimiento', { ascending: false });
+      .select('id,monto,estado,fecha_vencimiento,concepto')
+      .order('fecha_vencimiento', { ascending: false })
+      .limit(250);
 
     if (err) {
       setError('No pudimos cargar tus pagos. Verifica tu conexión e intenta de nuevo.');
@@ -83,7 +76,9 @@ export default function PaymentsScreen() {
     else setLoading(false);
   }, []);
 
-  useEffect(() => { void fetchPagos(); }, [fetchPagos]);
+  useEffect(() => {
+    void fetchPagos();
+  }, [fetchPagos]);
 
   // ── resumen de pendientes ──────────────────────────────────────────────────
   const pendientes = pagos.filter((p) => p.estado === 'pendiente');
@@ -97,17 +92,10 @@ export default function PaymentsScreen() {
   return (
     <ScrollView
       style={{ backgroundColor: colors.background }}
-      contentContainerStyle={[
-        styles.content,
-        { paddingTop: insets.top + 18, paddingBottom: insets.bottom + 104 },
-      ]}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + 18, paddingBottom: insets.bottom + 104 }]}
       showsVerticalScrollIndicator={false}
       refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => fetchPagos(true)}
-          tintColor={colors.primary}
-        />
+        <RefreshControl refreshing={refreshing} onRefresh={() => fetchPagos(true)} tintColor={colors.primary} />
       }
     >
       {/* ── encabezado ─────────────────────────────────────────────────── */}
@@ -176,59 +164,58 @@ export default function PaymentsScreen() {
         <View style={styles.centered}>
           <Feather name="check-circle" size={32} color={colors.primary} />
           <Text style={[styles.emptyTitle, { color: colors.foreground }]}>Estás al corriente</Text>
-          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-            No tienes pagos registrados aún.
-          </Text>
+          <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>No tienes pagos registrados aún.</Text>
         </View>
       )}
 
       {/* ── historial agrupado por año ─────────────────────────────────── */}
-      {!loading && !error && grupos.length > 0 && grupos.map(([anio, lista]) => (
-        <View key={anio}>
-          <SectionTitle title={String(anio)} />
-          <View style={[styles.historyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            {lista.map((pago, index) => {
-              const esPendiente = pago.estado === 'pendiente';
-              const iconName: 'alert-circle' | 'check' = esPendiente ? 'alert-circle' : 'check';
-              const iconBg = esPendiente ? 'rgba(255,140,80,0.18)' : colors.secondary;
-              const iconColor = esPendiente ? '#ff8c50' : colors.foreground;
-              const statusColor = esPendiente ? '#ff8c50' : '#3e9471';
-              const statusLabel = esPendiente ? 'Pendiente' : 'Pagado';
+      {!loading &&
+        !error &&
+        grupos.length > 0 &&
+        grupos.map(([anio, lista]) => (
+          <View key={anio}>
+            <SectionTitle title={String(anio)} />
+            <View style={[styles.historyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              {lista.map((pago, index) => {
+                const esPendiente = pago.estado === 'pendiente';
+                const iconName: 'alert-circle' | 'check' = esPendiente ? 'alert-circle' : 'check';
+                const iconBg = esPendiente ? 'rgba(255,140,80,0.18)' : colors.secondary;
+                const iconColor = esPendiente ? '#ff8c50' : colors.foreground;
+                const statusColor = esPendiente ? '#ff8c50' : '#3e9471';
+                const statusLabel = esPendiente ? 'Pendiente' : 'Pagado';
 
-              return (
-                <View
-                  key={pago.id}
-                  style={[
-                    styles.paymentRow,
-                    index < lista.length - 1 && {
-                      borderBottomColor: colors.border,
-                      borderBottomWidth: 1,
-                    },
-                  ]}
-                >
-                  <View style={[styles.paymentIcon, { backgroundColor: iconBg }]}>
-                    <Feather name={iconName} size={16} color={iconColor} />
+                return (
+                  <View
+                    key={`${pago.id}-${pago.fecha_vencimiento}-${index}`}
+                    style={[
+                      styles.paymentRow,
+                      index < lista.length - 1 && {
+                        borderBottomColor: colors.border,
+                        borderBottomWidth: 1,
+                      },
+                    ]}
+                  >
+                    <View style={[styles.paymentIcon, { backgroundColor: iconBg }]}>
+                      <Feather name={iconName} size={16} color={iconColor} />
+                    </View>
+                    <View style={styles.paymentInfo}>
+                      <Text style={[styles.paymentLabel, { color: colors.foreground }]}>
+                        {pago.concepto ?? 'Cuota mensual'}
+                      </Text>
+                      <Text style={[styles.paymentDate, { color: colors.mutedForeground }]}>
+                        {formatFecha(pago.fecha_vencimiento)}
+                      </Text>
+                    </View>
+                    <View style={styles.paymentAmount}>
+                      <Text style={[styles.amount, { color: colors.foreground }]}>{formatMonto(pago.monto)}</Text>
+                      <Text style={[styles.statusLabel, { color: statusColor }]}>{statusLabel}</Text>
+                    </View>
                   </View>
-                  <View style={styles.paymentInfo}>
-                    <Text style={[styles.paymentLabel, { color: colors.foreground }]}>
-                      {pago.concepto ?? 'Cuota mensual'}
-                    </Text>
-                    <Text style={[styles.paymentDate, { color: colors.mutedForeground }]}>
-                      {formatFecha(pago.fecha_vencimiento)}
-                    </Text>
-                  </View>
-                  <View style={styles.paymentAmount}>
-                    <Text style={[styles.amount, { color: colors.foreground }]}>
-                      {formatMonto(pago.monto)}
-                    </Text>
-                    <Text style={[styles.statusLabel, { color: statusColor }]}>{statusLabel}</Text>
-                  </View>
-                </View>
-              );
-            })}
+                );
+              })}
+            </View>
           </View>
-        </View>
-      ))}
+        ))}
     </ScrollView>
   );
 }
@@ -238,13 +225,33 @@ export default function PaymentsScreen() {
 const styles = StyleSheet.create({
   content: { paddingHorizontal: 20 },
 
-  eyebrow: { fontFamily: 'Inter_700Bold', fontSize: 11, letterSpacing: 1.5, marginBottom: 10 },
-  title: { fontFamily: 'Inter_700Bold', fontSize: 32, letterSpacing: -1, lineHeight: 39, marginBottom: 26 },
+  eyebrow: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11,
+    letterSpacing: 1.5,
+    marginBottom: 10,
+  },
+  title: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 32,
+    letterSpacing: -1,
+    lineHeight: 39,
+    marginBottom: 26,
+  },
 
   // balance card
   balanceCard: { borderRadius: 22, padding: 22, marginBottom: 28 },
-  balanceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  balanceLabel: { color: '#b9c4ca', fontFamily: 'Inter_700Bold', fontSize: 10, letterSpacing: 1.3 },
+  balanceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  balanceLabel: {
+    color: '#b9c4ca',
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    letterSpacing: 1.3,
+  },
   paidBadge: {
     backgroundColor: 'rgba(220,238,228,0.16)',
     borderRadius: 12,
@@ -254,12 +261,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
-  paidBadgeText: { color: '#dceee4', fontFamily: 'Inter_600SemiBold', fontSize: 11 },
-  balance: { color: '#fffdf9', fontFamily: 'Inter_700Bold', fontSize: 42, letterSpacing: -1.5, marginTop: 20 },
-  balanceNote: { color: '#b9c4ca', fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 19, marginTop: 10, maxWidth: 280 },
+  paidBadgeText: {
+    color: '#dceee4',
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+  },
+  balance: {
+    color: '#fffdf9',
+    fontFamily: 'Inter_700Bold',
+    fontSize: 42,
+    letterSpacing: -1.5,
+    marginTop: 20,
+  },
+  balanceNote: {
+    color: '#b9c4ca',
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 10,
+    maxWidth: 280,
+  },
 
   // loading / error / empty
-  centered: { alignItems: 'center', paddingTop: 48, paddingHorizontal: 20, gap: 12 },
+  centered: {
+    alignItems: 'center',
+    paddingTop: 48,
+    paddingHorizontal: 20,
+    gap: 12,
+  },
   loadingText: { fontFamily: 'Inter_400Regular', fontSize: 14, marginTop: 4 },
   errorCard: {
     borderRadius: 18,
@@ -269,16 +298,49 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 8,
   },
-  errorText: { fontFamily: 'Inter_400Regular', fontSize: 14, lineHeight: 21, textAlign: 'center' },
-  retryButton: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14, marginTop: 4 },
+  errorText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    lineHeight: 21,
+    textAlign: 'center',
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 14,
+    marginTop: 4,
+  },
   retryText: { fontFamily: 'Inter_600SemiBold', fontSize: 14 },
   emptyTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 16 },
-  emptyText: { fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 19, textAlign: 'center', maxWidth: 280 },
+  emptyText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    lineHeight: 19,
+    textAlign: 'center',
+    maxWidth: 280,
+  },
 
   // historial
-  historyCard: { borderRadius: 18, borderWidth: 1, overflow: 'hidden', marginBottom: 4 },
-  paymentRow: { minHeight: 82, paddingHorizontal: 15, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  paymentIcon: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  historyCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  paymentRow: {
+    minHeight: 82,
+    paddingHorizontal: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  paymentIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   paymentInfo: { flex: 1 },
   paymentLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 14 },
   paymentDate: { fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 5 },

@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { useColors } from '@/hooks/useColors';
+import { RequestStatus, requestStatusLabel } from '@/lib/residentData';
 
 export function IconButton({
   icon,
@@ -22,7 +23,11 @@ export function IconButton({
       accessibilityLabel={label}
       style={({ pressed }) => [
         styles.iconButton,
-        { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+        {
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+          opacity: pressed ? 0.7 : 1,
+        },
         style,
       ]}
     >
@@ -31,39 +36,42 @@ export function IconButton({
   );
 }
 
-export function StatusPill({ status }: { status: 'Open' | 'In progress' | 'Resolved' }) {
+export function StatusPill({ status }: { status: RequestStatus }) {
   const colors = useColors();
-  const isResolved = status === 'Resolved';
-  const isOpen = status === 'Open';
+  const isResolved = status === 'resuelto';
+  const isOpen = status === 'pendiente';
   return (
     <View
       style={[
         styles.statusPill,
-        { backgroundColor: isResolved ? '#dceee4' : isOpen ? '#f5e7bd' : colors.accent },
+        {
+          backgroundColor: isResolved ? '#dceee4' : isOpen ? '#f5e7bd' : colors.accent,
+        },
       ]}
     >
       <View
         style={[
           styles.statusDot,
-          { backgroundColor: isResolved ? '#3e9471' : isOpen ? '#b7812a' : colors.primary },
+          {
+            backgroundColor: isResolved ? '#3e9471' : isOpen ? '#b7812a' : colors.primary,
+          },
         ]}
       />
-      <Text style={[styles.statusText, { color: isResolved ? '#2d6f53' : isOpen ? '#80601e' : colors.accentForeground }]}>
-        {status}
+      <Text
+        style={[
+          styles.statusText,
+          {
+            color: isResolved ? '#2d6f53' : isOpen ? '#80601e' : colors.accentForeground,
+          },
+        ]}
+      >
+        {requestStatusLabel(status)}
       </Text>
     </View>
   );
 }
 
-export function SectionTitle({
-  title,
-  action,
-  onAction,
-}: {
-  title: string;
-  action?: string;
-  onAction?: () => void;
-}) {
+export function SectionTitle({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
   const colors = useColors();
   return (
     <View style={styles.sectionTitleRow}>

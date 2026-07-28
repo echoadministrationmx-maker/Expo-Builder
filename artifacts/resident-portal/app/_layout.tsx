@@ -25,7 +25,6 @@ function RootLayoutNav() {
     <Stack screenOptions={{ headerShown: false, headerBackTitle: 'Back' }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="request/new" options={{ presentation: 'card' }} />
-      <Stack.Screen name="announcement/[id]" options={{ presentation: 'card' }} />
     </Stack>
   );
 }

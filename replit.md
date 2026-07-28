@@ -1,9 +1,12 @@
-# [Project name]
+# Echo Resident Portal
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Expo resident portal plus the supporting API and shared workspace packages.
 
 ## Run & Operate
 
+- `pnpm --filter @workspace/resident-portal run dev` — run Expo through the Replit proxy
+- `pnpm --filter @workspace/resident-portal start` — run Expo locally over LAN for Expo Go
+- `pnpm --filter @workspace/resident-portal run start:tunnel` — local Expo Go fallback when LAN discovery fails
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
@@ -22,24 +25,46 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/resident-portal` — Expo resident app
+- `artifacts/resident-portal/app` — Expo Router screens
+- `artifacts/resident-portal/context/ResidentContext.tsx` — native authentication/session state
+- `artifacts/resident-portal/lib/supabase.ts` — native Supabase client
+- `artifacts/resident-portal/docs/app-store` — App Store metadata and release checklist
+- `artifacts/api-server` — supporting workspace API
+- Web resident/admin portal source: https://github.com/echoadministrationmx-maker/echoadministration-web
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The native app replicates a focused subset of the web resident portal while sharing the same Echo brand and Supabase
+  project.
+- Native authentication uses Supabase Auth sessions and Row Level Security; do not copy the web portal's legacy
+  password-in-memory RPC session.
+- Only Supabase publishable client credentials use `EXPO_PUBLIC_*` variables. Secret/service-role keys must never be
+  bundled.
+- Replit keeps its proxy-specific `dev` script. Mac/iPhone development uses LAN or tunnel scripts.
+- App Store binaries are produced and signed with EAS Build from the Expo app directory.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Private resident access, profile and balance summary, payment history, and maintenance request tracking/submission.
+Additional web modules can be brought to native in later releases.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Keep the Mac, Replit, second development computer, and GitHub synchronized through reviewed commits.
+- Require explicit user approval before future Git pushes.
+- Preserve Replit-specific behavior while making local and App Store workflows reproducible.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Keep the Replit-only `dev` script separate from local `start`; Replit depends on its proxy environment variables.
+- Run EAS commands from `artifacts/resident-portal`, which is the Expo app root in this monorepo.
+- Do not add placeholder `owner`, `extra.eas.projectId`, or `updates.url` values to `app.json`. Run `pnpm run eas:init` while logged into the intended Expo account so EAS writes the real project ID.
+- `.env.local` stays untracked. Copy `.env.example` on each development computer and configure `EXPO_PUBLIC_SUPABASE_URL` plus `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in Replit and EAS before production builds.
+- Before switching computers: commit and push; on the other computer: pull before editing. Never commit `node_modules`, `.expo`, `.env.local`, or generated `ios`/`android` directories.
 
 ## Pointers
 
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- `artifacts/resident-portal/README.md`
+- `artifacts/resident-portal/docs/app-store/RELEASE_CHECKLIST.md`
+- `artifacts/resident-portal/docs/security/SUPABASE_CHECKLIST.md`

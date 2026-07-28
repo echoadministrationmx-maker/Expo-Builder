@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   StyleSheet,
@@ -14,6 +15,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
 import { useResident } from '@/context/ResidentContext';
+
+const PRIVACY_URL = 'https://www.echoadministration.com/privacidad';
+const SUPPORT_URL = 'mailto:echoadministrationmx@gmail.com?subject=Soporte%20app%20Echo';
 
 export default function WelcomeScreen() {
   const colors = useColors();
@@ -81,6 +85,7 @@ export default function WelcomeScreen() {
           <TextInput
             value={clave}
             onChangeText={setClave}
+            maxLength={64}
             autoCapitalize="none"
             autoCorrect={false}
             placeholder="Ej: 101A"
@@ -97,7 +102,10 @@ export default function WelcomeScreen() {
           <TextInput
             value={password}
             onChangeText={setPassword}
+            maxLength={256}
             secureTextEntry={!showPassword}
+            textContentType="password"
+            autoComplete="password"
             placeholder="Contraseña"
             placeholderTextColor={colors.mutedForeground}
             style={[styles.input, { color: colors.foreground }]}
@@ -110,16 +118,20 @@ export default function WelcomeScreen() {
             accessibilityLabel={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             hitSlop={8}
           >
-            <Feather
-              name={showPassword ? 'eye-off' : 'eye'}
-              size={18}
-              color={colors.mutedForeground}
-            />
+            <Feather name={showPassword ? 'eye-off' : 'eye'} size={18} color={colors.mutedForeground} />
           </Pressable>
         </View>
 
         {error ? (
-          <View style={[styles.errorBox, { backgroundColor: colors.destructive + '18', borderColor: colors.destructive + '40' }]}>
+          <View
+            style={[
+              styles.errorBox,
+              {
+                backgroundColor: colors.destructive + '18',
+                borderColor: colors.destructive + '40',
+              },
+            ]}
+          >
             <Feather name="alert-circle" size={14} color={colors.destructive} />
             <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>
           </View>
@@ -127,12 +139,15 @@ export default function WelcomeScreen() {
 
         <Pressable
           onPress={handleSignIn}
-          disabled={isSubmitting}
+          disabled={isSubmitting || !clave.trim() || !password}
           accessibilityRole="button"
           accessibilityLabel="Ingresar al portal"
           style={({ pressed }) => [
             styles.primaryButton,
-            { backgroundColor: colors.primary, opacity: pressed || isSubmitting ? 0.8 : 1 },
+            {
+              backgroundColor: colors.primary,
+              opacity: pressed || isSubmitting || !clave.trim() || !password ? 0.6 : 1,
+            },
           ]}
         >
           {isSubmitting ? (
@@ -151,32 +166,122 @@ export default function WelcomeScreen() {
       </View>
 
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
-        <Feather name="shield" size={15} color={colors.mutedForeground} />
-        <Text style={[styles.footerText, { color: colors.mutedForeground }]}>Acceso privado para residentes</Text>
+        <View style={styles.footerSecurity}>
+          <Feather name="shield" size={15} color={colors.mutedForeground} />
+          <Text style={[styles.footerText, { color: colors.mutedForeground }]}>Acceso privado para residentes</Text>
+        </View>
+        <View style={styles.footerLinks}>
+          <Pressable onPress={() => void Linking.openURL(PRIVACY_URL)} hitSlop={8}>
+            <Text style={[styles.footerLink, { color: colors.primary }]}>Privacidad</Text>
+          </Pressable>
+          <Text style={[styles.footerDot, { color: colors.mutedForeground }]}>•</Text>
+          <Pressable onPress={() => void Linking.openURL(SUPPORT_URL)} hitSlop={8}>
+            <Text style={[styles.footerLink, { color: colors.primary }]}>Soporte</Text>
+          </Pressable>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 24, justifyContent: 'space-between' },
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: 'space-between',
+  },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  topBrand: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 18 },
-  brandMark: { width: 38, height: 38, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  topBrand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingTop: 18,
+  },
+  brandMark: {
+    width: 38,
+    height: 38,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   brandName: { fontFamily: 'Inter_700Bold', fontSize: 22, letterSpacing: -0.5 },
   hero: { marginTop: 30 },
-  eyebrow: { fontFamily: 'Inter_700Bold', fontSize: 11, letterSpacing: 1.6, marginBottom: 12 },
-  title: { fontFamily: 'Inter_700Bold', fontSize: 40, letterSpacing: -1.5, lineHeight: 47 },
-  subtitle: { fontFamily: 'Inter_400Regular', fontSize: 16, lineHeight: 24, marginTop: 12, maxWidth: 320 },
+  eyebrow: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11,
+    letterSpacing: 1.6,
+    marginBottom: 12,
+  },
+  title: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 40,
+    letterSpacing: -1.5,
+    lineHeight: 47,
+  },
+  subtitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 16,
+    lineHeight: 24,
+    marginTop: 12,
+    maxWidth: 320,
+  },
   form: { gap: 12 },
   formLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 18, marginBottom: 3 },
-  inputWrap: { height: 56, borderWidth: 1, borderRadius: 16, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  input: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 15, height: '100%' },
-  errorBox: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
-  errorText: { fontFamily: 'Inter_500Medium', fontSize: 13, flex: 1, lineHeight: 18 },
-  primaryButton: { height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 10, marginTop: 4 },
+  inputWrap: {
+    height: 56,
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  input: {
+    flex: 1,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 15,
+    height: '100%',
+  },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  errorText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    flex: 1,
+    lineHeight: 18,
+  },
+  primaryButton: {
+    height: 56,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 4,
+  },
   primaryButtonText: { fontFamily: 'Inter_600SemiBold', fontSize: 16 },
-  helper: { textAlign: 'center', fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 },
-  footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7 },
+  helper: {
+    textAlign: 'center',
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  footer: { alignItems: 'center', gap: 8 },
+  footerSecurity: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+  },
+  footerLinks: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   footerText: { fontFamily: 'Inter_500Medium', fontSize: 12 },
+  footerLink: { fontFamily: 'Inter_600SemiBold', fontSize: 12 },
+  footerDot: { fontFamily: 'Inter_400Regular', fontSize: 11 },
 });
