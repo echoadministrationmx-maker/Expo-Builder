@@ -46,6 +46,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "cf45d66d-1d10-4e56-83ab-bce5316a0874"
+      }
+    },
+    "owner": "marianriv23s-team"
   }
 }
