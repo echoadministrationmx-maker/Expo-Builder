@@ -38,6 +38,9 @@ yarn-error.*
 .eas/
 eas-credentials.json
 
+# Supabase CLI
+supabase/.temp/
+
 # typescript
 *.tsbuildinfo
 .vercel

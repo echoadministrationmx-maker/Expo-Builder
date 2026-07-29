@@ -7,6 +7,12 @@
 - [ ] Confirm payment totals and maintenance data belong only to the signed-in resident.
 - [ ] Create a dedicated App Review resident account with representative data.
 - [ ] Complete the Supabase server-side security checklist.
+- [ ] Run `supabase/tests/payment_integrity.sql` against the linked project and confirm it exits
+      successfully without retaining its transaction fixtures.
+- [ ] Confirm the Mercado Pago callback dismisses checkout and returns to the payment-result screen
+      in a TestFlight build.
+- [ ] Run one low-value, refundable production payment and confirm the webhook updates only that
+      resident's real ledger.
 
 ## 2. Accounts
 
@@ -14,6 +20,10 @@
 - [ ] Active Apple Developer Program membership.
 - [ ] Agreements accepted in Apple Developer and App Store Connect.
 - [ ] App Store Connect app record uses bundle ID `com.echoadmin.residentportal`.
+- [ ] Mercado Pago production credentials are activated for the new `Echo Resident Portal`
+      integration and stored only as Supabase secrets.
+- [ ] Mercado Pago production webhook uses the deployed `mp-webhook` endpoint and its signing secret
+      matches the Supabase secret.
 
 ## 3. EAS
 
@@ -48,6 +58,7 @@ accidental display in logs and dashboards. Never add a Supabase secret/service-r
 - [ ] Copy metadata from `METADATA_ES_MX.md`.
 - [ ] Complete App Privacy using `APP_PRIVACY.md`.
 - [ ] Upload final screenshots from the production/TestFlight build.
+- [ ] Confirm the public support page shows the current WhatsApp number and support email.
 - [ ] Complete age rating, content rights, availability, and Digital Services Act fields.
 - [ ] Add the build to version 1.0.
 - [ ] Add the dedicated demo credentials and notes from `REVIEW_NOTES.md`.

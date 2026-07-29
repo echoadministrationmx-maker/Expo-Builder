@@ -4,6 +4,14 @@ The mobile code uses Supabase Auth sessions and relies on Row Level Security for
 Read-only probes on 2026-07-28 confirmed that anonymous requests to `pagos` and `incidencias` return
 HTTP 401.
 
+Migration `20260728070000_payment_integrity_and_rls.sql` explicitly enables RLS on
+`mp_intenciones` and `mp_transacciones`, recreates their resident/admin SELECT policies, and
+quarantines duplicate approved payments. The linked, rollback-only integration test is:
+
+```sh
+pnpm dlx supabase@latest db query --linked --file supabase/tests/payment_integrity.sql
+```
+
 ## Required before App Review
 
 - [ ] RLS is enabled on `pagos`, `incidencias`, resident profiles, and every related table.

@@ -34,5 +34,10 @@ Supabase provides authentication and database infrastructure. Apple requires the
 to include third-party SDK behavior, so verify Supabase's current data practices again immediately
 before submission.
 
+Mercado Pago Checkout Pro processes payment credentials on Mercado Pago's hosted checkout. Echo
+receives the transaction amount, status, payment identifier, and payment method needed to reconcile
+the resident's condominium balance, but does not receive or store card or bank-account credentials.
+The payment-related records are covered by **Financial Info — Other Financial Info** above.
+
 The public privacy policy is:
 https://www.echoadministration.com/privacidad

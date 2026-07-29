@@ -24,6 +24,7 @@ Con la app puedes:
 
 - Consultar tu saldo y el historial de pagos.
 - Revisar el estado de tus cuotas de mantenimiento.
+- Consultar los datos de transferencia y enviar el comprobante a la administración.
 - Enviar solicitudes de mantenimiento.
 - Dar seguimiento a tus solicitudes desde el celular.
 
