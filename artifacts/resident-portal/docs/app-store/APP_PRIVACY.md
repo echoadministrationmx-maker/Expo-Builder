@@ -14,9 +14,11 @@ reporting, photos, location, advertising, or payment collection is added.
 | ------------------------------------- | ----------------- | ----------------------------------------------------------------- |
 | Contact Info — Name                   | App Functionality | Resident profile display                                          |
 | Contact Info — Email Address          | App Functionality | Supabase Auth account                                             |
+| Contact Info — Phone Number           | App Functionality | Resident phone and WhatsApp contact details                       |
 | Identifiers — User ID                 | App Functionality | Account and tenant authorization                                  |
 | Financial Info — Other Financial Info | App Functionality | Condominium balance and payment history; no card number is stored |
 | User Content — Customer Support       | App Functionality | Maintenance category and description                              |
+| User Content — Other User Content     | App Functionality | Responses to active community surveys                             |
 
 ## Not collected by this release
 
