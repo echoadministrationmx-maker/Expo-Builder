@@ -8,6 +8,7 @@
 // ============================================================
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { checkoutReturnUrls } from "../_shared/paymentReturn.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -32,49 +33,6 @@ const json = (body: unknown, status = 200) =>
     headers: { ...cors, "Content-Type": "application/json" },
   });
 
-function checkoutReturnUrls(requestedUrl: unknown) {
-  let base: URL;
-
-  try {
-    base = new URL(
-      typeof requestedUrl === "string" && requestedUrl.length <= 500
-        ? requestedUrl
-        : `${PUBLIC_BASE_URL}/pago`,
-    );
-  } catch {
-    throw new Error("return_url_invalida");
-  }
-
-  const isNativeApp =
-    base.protocol === "resident-portal:" &&
-    (base.hostname === "payment-result" || base.pathname === "/payment-result");
-  const isExpoGo =
-    MP_ENVIRONMENT === "sandbox" &&
-    base.protocol === "exp:" &&
-    base.pathname.endsWith("/--/payment-result");
-  const isEchoWeb =
-    base.protocol === "https:" &&
-    ["echoadministration.com", "www.echoadministration.com"].includes(
-      base.hostname,
-    );
-
-  if (!isNativeApp && !isExpoGo && !isEchoWeb) {
-    throw new Error("return_url_no_permitida");
-  }
-
-  const withResult = (result: string) => {
-    const url = new URL(base.toString());
-    url.searchParams.set("result", result);
-    return url.toString();
-  };
-
-  return {
-    success: withResult("success"),
-    failure: withResult("failure"),
-    pending: withResult("pending"),
-  };
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -95,7 +53,10 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const backUrls = checkoutReturnUrls(body?.return_url);
+    const backUrls = checkoutReturnUrls(body?.return_url, {
+      publicBaseUrl: PUBLIC_BASE_URL,
+      environment: MP_ENVIRONMENT,
+    });
 
     const { data: perfil, error: perfilError } = await dbUser
       .rpc("validar_residente_jwt")
@@ -183,6 +144,7 @@ Deno.serve(async (req) => {
       console.error("mercadopago_preference_error", {
         status: mpRes.status,
         intencionId: intento.intencion_id,
+        message: String(pref?.message ?? "unknown").slice(0, 160),
       });
       return json({ error: "mercadopago_no_disponible" }, 502);
     }

@@ -1,4 +1,5 @@
 import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 import React, { useCallback, useEffect, useState } from "react";
@@ -217,17 +218,30 @@ export default function PaymentsScreen() {
         throw new Error(code ?? "respuesta_invalida");
       }
 
-      const browserResult = await WebBrowser.openBrowserAsync(
+      const browserResult = await WebBrowser.openAuthSessionAsync(
         data.checkout_url,
+        returnUrl,
         {
           presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
           controlsColor: colors.primary,
+          preferEphemeralSession: true,
         },
       );
 
-      if (browserResult.type !== "cancel") {
-        await fetchPagos(true);
+      if (browserResult.type === "success") {
+        const callback = Linking.parse(browserResult.url);
+        const callbackReference = callback.queryParams?.external_reference;
+        const externalReference =
+          typeof callbackReference === "string"
+            ? callbackReference
+            : data.intencion_id;
+
+        router.push({
+          pathname: "/payment-result",
+          params: { external_reference: externalReference },
+        });
       }
+      await fetchPagos(true);
     } catch (checkoutError) {
       const code =
         checkoutError instanceof Error ? checkoutError.message : undefined;

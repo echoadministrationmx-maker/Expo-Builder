@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -15,6 +16,11 @@ import { supabase } from "@/lib/supabase";
 import { useColors } from "@/hooks/useColors";
 import { normalizeRequestStatus } from "@/lib/residentData";
 import { COMMUNITY_RESOURCES } from "@/lib/communityResources";
+import {
+  ActiveSurvey,
+  normalizeActiveSurveys,
+  surveyPercentage,
+} from "@/lib/surveys";
 
 // ─── tipos ────────────────────────────────────────────────────────────────────
 
@@ -83,27 +89,40 @@ export default function RequestsScreen() {
   const insets = useSafeAreaInsets();
 
   const [incidencias, setIncidencias] = useState<Incidencia[]>([]);
+  const [surveys, setSurveys] = useState<ActiveSurvey[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [surveyError, setSurveyError] = useState<string | null>(null);
+  const [votingSurveyId, setVotingSurveyId] = useState<number | null>(null);
 
-  const fetchIncidencias = useCallback(async (isRefresh = false) => {
+  const fetchContent = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
     setError(null);
+    setSurveyError(null);
 
-    const { data, error: err } = await supabase
-      .from("incidencias")
-      .select("id,categoria,descripcion,estado,created_at")
-      .order("created_at", { ascending: false })
-      .limit(100);
+    const [requestsResult, surveysResult] = await Promise.all([
+      supabase
+        .from("incidencias")
+        .select("id,categoria,descripcion,estado,created_at")
+        .order("created_at", { ascending: false })
+        .limit(100),
+      supabase.rpc("obtener_encuestas_activas"),
+    ]);
 
-    if (err) {
+    if (requestsResult.error) {
       setError(
         "No pudimos cargar tus solicitudes. Verifica tu conexión e intenta de nuevo.",
       );
     } else {
-      setIncidencias((data ?? []) as Incidencia[]);
+      setIncidencias((requestsResult.data ?? []) as Incidencia[]);
+    }
+
+    if (surveysResult.error) {
+      setSurveyError("No pudimos cargar las encuestas activas.");
+    } else {
+      setSurveys(normalizeActiveSurveys(surveysResult.data));
     }
 
     if (isRefresh) setRefreshing(false);
@@ -111,8 +130,52 @@ export default function RequestsScreen() {
   }, []);
 
   useEffect(() => {
-    void fetchIncidencias();
-  }, [fetchIncidencias]);
+    void fetchContent();
+  }, [fetchContent]);
+
+  const vote = useCallback(async (surveyId: number, optionIndex: number) => {
+    setVotingSurveyId(surveyId);
+    const { data, error: voteError } = await supabase.rpc("votar_encuesta_jwt", {
+      p_encuesta_id: surveyId,
+      p_opcion: optionIndex,
+    });
+
+    if (voteError) {
+      Alert.alert(
+        "No pudimos registrar tu voto",
+        "Intenta de nuevo en unos momentos.",
+      );
+    } else {
+      const result = data as {
+        total?: unknown;
+        conteos?: unknown;
+        mi_voto?: unknown;
+      };
+      setSurveys((current) =>
+        current.map((survey) =>
+          survey.id === surveyId
+            ? {
+                ...survey,
+                total: Math.max(0, Number(result.total) || 0),
+                conteos:
+                  result.conteos && typeof result.conteos === "object"
+                    ? Object.fromEntries(
+                        Object.entries(
+                          result.conteos as Record<string, unknown>,
+                        ).map(([key, count]) => [
+                          key,
+                          Math.max(0, Number(count) || 0),
+                        ]),
+                      )
+                    : survey.conteos,
+                mi_voto: Number(result.mi_voto),
+              }
+            : survey,
+        ),
+      );
+    }
+    setVotingSurveyId(null);
+  }, []);
 
   // ─── header ──────────────────────────────────────────────────────────────
   const ListHeader = (
@@ -142,6 +205,185 @@ export default function RequestsScreen() {
           Nueva solicitud
         </Text>
       </Pressable>
+      <View style={styles.activeSectionHeader}>
+        <View>
+          <Text style={[styles.activeEyebrow, { color: colors.primary }]}>
+            PARTICIPA
+          </Text>
+          <Text style={[styles.activeTitle, { color: colors.foreground }]}>
+            Encuestas activas
+          </Text>
+        </View>
+        <View style={[styles.activeCount, { backgroundColor: colors.accent }]}>
+          <Text style={[styles.activeCountText, { color: colors.primary }]}>
+            {surveys.length}
+          </Text>
+        </View>
+      </View>
+      {loading ? (
+        <View
+          style={[
+            styles.pollEmpty,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <ActivityIndicator size="small" color={colors.primary} />
+          <Text
+            style={[styles.pollEmptyText, { color: colors.mutedForeground }]}
+          >
+            Cargando encuestas…
+          </Text>
+        </View>
+      ) : surveyError ? (
+        <View
+          style={[
+            styles.pollEmpty,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <Feather name="wifi-off" size={20} color={colors.primary} />
+          <Text style={[styles.pollEmptyText, { color: colors.foreground }]}>
+            {surveyError}
+          </Text>
+          <Pressable
+            onPress={() => fetchContent()}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.pollRetry, { color: colors.primary }]}>
+              Reintentar
+            </Text>
+          </Pressable>
+        </View>
+      ) : surveys.length === 0 ? (
+        <View
+          style={[
+            styles.pollEmpty,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <Feather name="bar-chart-2" size={21} color={colors.primary} />
+          <View style={styles.pollEmptyCopy}>
+            <Text style={[styles.pollEmptyTitle, { color: colors.foreground }]}>
+              No hay encuestas activas
+            </Text>
+            <Text
+              style={[
+                styles.pollEmptyText,
+                { color: colors.mutedForeground },
+              ]}
+            >
+              Te avisaremos cuando la administración publique una nueva.
+            </Text>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.pollList}>
+          {surveys.map((survey) => (
+            <View
+              key={survey.id}
+              style={[
+                styles.pollCard,
+                { backgroundColor: colors.card, borderColor: colors.border },
+              ]}
+            >
+              <Text style={[styles.pollQuestion, { color: colors.foreground }]}>
+                {survey.pregunta}
+              </Text>
+              <Text
+                style={[styles.pollMeta, { color: colors.mutedForeground }]}
+              >
+                {survey.total === 1
+                  ? "1 respuesta"
+                  : `${survey.total} respuestas`}
+              </Text>
+              <View style={styles.pollOptions}>
+                {survey.opciones.map((option, index) => {
+                  const selected = survey.mi_voto === index;
+                  const count = survey.conteos[String(index)] ?? 0;
+                  const percent = surveyPercentage(count, survey.total);
+                  const isVoting = votingSurveyId === survey.id;
+                  return (
+                    <Pressable
+                      key={`${survey.id}-${index}`}
+                      onPress={() => vote(survey.id, index)}
+                      disabled={isVoting}
+                      accessibilityRole="radio"
+                      accessibilityState={{
+                        checked: selected,
+                        disabled: isVoting,
+                      }}
+                      accessibilityLabel={`${option}, ${percent}%`}
+                      style={({ pressed }) => [
+                        styles.pollOption,
+                        {
+                          borderColor: selected
+                            ? colors.primary
+                            : colors.border,
+                          backgroundColor: selected
+                            ? colors.accent
+                            : colors.background,
+                          opacity: pressed || isVoting ? 0.72 : 1,
+                        },
+                      ]}
+                    >
+                      <View
+                        style={[
+                          styles.pollRadio,
+                          {
+                            borderColor: selected
+                              ? colors.primary
+                              : colors.mutedForeground,
+                          },
+                        ]}
+                      >
+                        {selected ? (
+                          <View
+                            style={[
+                              styles.pollRadioDot,
+                              { backgroundColor: colors.primary },
+                            ]}
+                          />
+                        ) : null}
+                      </View>
+                      <Text
+                        style={[
+                          styles.pollOptionText,
+                          { color: colors.foreground },
+                        ]}
+                      >
+                        {option}
+                      </Text>
+                      {survey.mi_voto !== null ? (
+                        <Text
+                          style={[
+                            styles.pollPercent,
+                            { color: colors.primary },
+                          ]}
+                        >
+                          {percent}%
+                        </Text>
+                      ) : null}
+                      {isVoting ? (
+                        <ActivityIndicator
+                          size="small"
+                          color={colors.primary}
+                        />
+                      ) : null}
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <Text
+                style={[styles.pollHint, { color: colors.mutedForeground }]}
+              >
+                {survey.mi_voto === null
+                  ? "Selecciona una opción para votar."
+                  : "Tu voto está registrado. Puedes cambiarlo."}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
       <View style={styles.activeSectionHeader}>
         <View>
           <Text style={[styles.activeEyebrow, { color: colors.primary }]}>
@@ -273,7 +515,7 @@ export default function RequestsScreen() {
             {error}
           </Text>
           <Pressable
-            onPress={() => fetchIncidencias()}
+            onPress={() => fetchContent()}
             style={({ pressed }) => [
               styles.retryButton,
               { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 },
@@ -320,7 +562,7 @@ export default function RequestsScreen() {
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
-          onRefresh={() => fetchIncidencias(true)}
+          onRefresh={() => fetchContent(true)}
           tintColor={colors.primary}
         />
       }
@@ -435,6 +677,76 @@ const styles = StyleSheet.create({
   },
   activeCountText: { fontFamily: "Inter_700Bold", fontSize: 12 },
   resourceList: { gap: 10 },
+  pollList: { gap: 12 },
+  pollCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 16,
+  },
+  pollQuestion: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  pollMeta: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 11,
+    marginTop: 5,
+  },
+  pollOptions: { gap: 9, marginTop: 14 },
+  pollOption: {
+    minHeight: 48,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 13,
+    paddingVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  pollRadio: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pollRadioDot: { width: 9, height: 9, borderRadius: 5 },
+  pollOptionText: {
+    flex: 1,
+    fontFamily: "Inter_500Medium",
+    fontSize: 13,
+  },
+  pollPercent: { fontFamily: "Inter_700Bold", fontSize: 12 },
+  pollHint: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 10,
+    lineHeight: 15,
+    marginTop: 11,
+  },
+  pollEmpty: {
+    minHeight: 82,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  pollEmptyCopy: { flex: 1 },
+  pollEmptyTitle: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 14,
+    marginBottom: 3,
+  },
+  pollEmptyText: {
+    flex: 1,
+    fontFamily: "Inter_400Regular",
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  pollRetry: { fontFamily: "Inter_600SemiBold", fontSize: 12 },
   resourceCard: {
     minHeight: 104,
     borderRadius: 18,

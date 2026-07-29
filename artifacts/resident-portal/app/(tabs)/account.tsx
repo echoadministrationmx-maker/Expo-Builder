@@ -149,8 +149,11 @@ export default function AccountScreen() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    router.replace("/");
+    try {
+      await signOut();
+    } finally {
+      router.replace("/login");
+    }
   };
 
   if (loading) {

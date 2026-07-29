@@ -17,7 +17,6 @@ import { useResident } from "@/context/ResidentContext";
 import { supabase } from "@/lib/supabase";
 import {
   formatResidentDate,
-  getNextPendingPayment,
   normalizeRequestStatus,
   paymentDataState,
   RESIDENT_PAYMENT_SELECT,
@@ -149,8 +148,11 @@ export default function HomeScreen() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    router.replace("/");
+    try {
+      await signOut();
+    } finally {
+      router.replace("/login");
+    }
   };
 
   // Derived values
@@ -160,7 +162,6 @@ export default function HomeScreen() {
     (sum, p) => sum + (p.monto ?? 0),
     0,
   );
-  const proximoPago = getNextPendingPayment(pagos);
   const ultimosPagos = pagos.slice(0, 5);
   const paymentsReady =
     paymentDataState({ loading, error: paymentsError }) === "ready";
@@ -252,7 +253,18 @@ export default function HomeScreen() {
       ) : null}
 
       {/* ── Balance card ── */}
-      <View style={[styles.balanceCard, { backgroundColor: colors.primary }]}>
+      <Pressable
+        onPress={() => router.push("/(tabs)/payments")}
+        accessibilityRole="button"
+        accessibilityLabel="Abrir detalle de pagos"
+        style={({ pressed }) => [
+          styles.balanceCard,
+          {
+            backgroundColor: colors.primary,
+            opacity: pressed ? 0.9 : 1,
+          },
+        ]}
+      >
         <View style={styles.cardTop}>
           <Text style={styles.cardLabel}>TU CUENTA</Text>
           <Feather
@@ -279,8 +291,12 @@ export default function HomeScreen() {
           <Text style={styles.dueText}>
             {!paymentsReady
               ? "Desliza hacia abajo para reintentar"
-              : proximoPago
-                ? `Vence ${formatResidentDate(proximoPago.fecha_vencimiento)}`
+              : pagosPendientes.length > 0
+                ? `${pagosPendientes.length} ${
+                    pagosPendientes.length === 1
+                      ? "cuota pendiente"
+                      : "cuotas pendientes"
+                  }`
                 : "Sin pagos pendientes"}
           </Text>
           {paymentsReady && saldoPendiente === 0 ? (
@@ -292,7 +308,7 @@ export default function HomeScreen() {
             </View>
           ) : null}
         </View>
-      </View>
+      </Pressable>
 
       {/* ── Quick actions ── */}
       <View style={styles.quickActions}>

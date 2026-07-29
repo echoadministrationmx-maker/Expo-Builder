@@ -100,12 +100,12 @@ export function ResidentProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      await supabase.auth.signOut({ scope: 'local' });
-    }
     setIsSignedIn(false);
     setResidentName('Residente');
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
+    if (error) {
+      throw new Error('No pudimos cerrar la sesión local.');
+    }
   }, []);
 
   const value = useMemo(

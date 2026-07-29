@@ -40,4 +40,8 @@ test("maps stable backend errors to resident-friendly Spanish", () => {
     mercadoPagoErrorMessage("pago_en_proceso"),
     "Ya hay un pago en proceso. Espera unos minutos y actualiza tu saldo.",
   );
+  assert.match(
+    mercadoPagoErrorMessage("return_url_no_permitida"),
+    /regreso seguro/,
+  );
 });

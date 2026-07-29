@@ -47,6 +47,11 @@ export function mercadoPagoErrorMessage(code: string | undefined): string {
       return "Tu sesión venció. Cierra sesión y vuelve a ingresar.";
     case "mercadopago_no_disponible":
       return "Mercado Pago no está disponible en este momento. Intenta de nuevo más tarde.";
+    case "return_url_invalida":
+    case "return_url_no_permitida":
+      return "No pudimos preparar el regreso seguro a Echo. Actualiza la aplicación e intenta nuevamente.";
+    case "servicio_no_configurado":
+      return "El servicio de pagos todavía no está configurado. Contacta a administración.";
     default:
       return "No pudimos iniciar el pago. Verifica tu conexión e intenta de nuevo.";
   }
